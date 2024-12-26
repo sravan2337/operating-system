@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define FRAME_SIZE 3
+#define PAGE_SIZE 10
+
+int findLRU(int time[], int n) {
+    int minimum = time[0], pos = 0;
+    for (int i = 1; i < n; ++i) {
+        if (time[i] < minimum) {
+            minimum = time[i];
+            pos = i;
+        }
+    }
+    return pos;
+}
+
+void LRU(int pages[], int n) {
+    int frame[FRAME_SIZE], time[FRAME_SIZE], counter = 0, pageFaults = 0, pos;
+
+    for (int i = 0; i < FRAME_SIZE; ++i) {
+        frame[i] = -1;
+    }
+
+    for (int i = 0; i < n; ++i) {
+        int flag = 0;
+        for (int j = 0; j < FRAME_SIZE; ++j) {
+            if (frame[j] == pages[i]) {
+                flag = 1;
+                time[j] = ++counter;
+                break;
+            }
+        }
+
+        if (flag == 0) {
+            pos = findLRU(time, FRAME_SIZE);
+            frame[pos] = pages[i];
+            time[pos] = ++counter;
+            pageFaults++;
+        }
+    }
+
+    printf("Total Page Faults: %d\n", pageFaults);
+}
+
+int main() {
+    int pages[PAGE_SIZE] = {0, 1, 2, 0, 3, 0, 4, 2, 3, 0};
+    int n = sizeof(pages) / sizeof(pages[0]);
+    LRU(pages, n);
+    return 0;
+}
+
+Output:
+
+Total Page Faults: 10
