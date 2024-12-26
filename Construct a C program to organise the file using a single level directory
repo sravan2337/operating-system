@@ -1,0 +1,40 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <dirent.h>
+
+void organizeFiles(const char *directory) {
+    struct dirent *entry;
+    DIR *dp = opendir(directory);
+
+    if (dp == NULL) {
+        perror("opendir");
+        return;
+    }
+
+    while ((entry = readdir(dp))) {
+        if (entry->d_type == DT_REG) {
+            char *ext = strrchr(entry->d_name, '.');
+            if (ext) {
+                char folderName[256];
+                snprintf(folderName, sizeof(folderName), "%s/%s", directory, ext + 1);
+                mkdir(folderName, 0755);
+                char oldPath[512], newPath[512];
+                snprintf(oldPath, sizeof(oldPath), "%s/%s", directory, entry->d_name);
+                snprintf(newPath, sizeof(newPath), "%s/%s/%s", directory, ext + 1, entry->d_name);
+                rename(oldPath, newPath);
+            }
+        }
+    }
+    closedir(dp);
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <directory>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    organizeFiles(argv[1]);
+    return EXIT_SUCCESS;
+}
